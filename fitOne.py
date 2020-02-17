@@ -25,7 +25,7 @@ for line in f:
  if int(t) < last: 
   a = all .pop(0)
   m = all
-  tag = [ la, p, a ]
+  tag = [ p, a ]
   tags.append(tag)
   ms.append(";".join(m))
   nl+=1
