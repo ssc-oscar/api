@@ -896,93 +896,303 @@ print (apply(a, c(2,3),mean,na.rm=T));
 
 # Do all the evaluations using tfidf + lsi
 python3 fitXtl.py PAPkgQ.a100.s2
+python3 measureTL.py PAPkgQ.all1.a100.s2 | gzip > outTL.gz
 
-Model:
-from gensim.models import Doc2Vec, LsiModel, TfidfModel
-from gensim import corpora, similarities
-
-f = 'PAPkgQ.all1.a100.s2'
-modt = LsiModel.load ('tfidf.'+f)
-modl = LsiModel.load ('tlsi.'+f)
-# go over developers 
-dict = corpora.Dictionary.load ('dict.'+f)
-dd = list (dict.values())
-
-f = gzip.open ('PAPkgQ.all2.a100.sAD')
-ms = {}
-nl = 0
-for line in f:
- l = line.rstrip().decode('ascii', 'ignore')
- all = l .split(';')
- st = all .pop(0)
- a = all .pop(0)
- la = all .pop(0)
- m = all
- k = a + ';' + la
- if k not in ms: ms [k] = {}
- ms [ k ][ st ] = m 
- nl+=1
-
-for k in ms:
- a, la = k.split(';')
- a0 = ms [ k ][ '0' ]
- a1 = ms [ k ][ '1' ]
- ar = random.sample (dd, len(a1))
- a0v = modl[dict.doc2bow(a0)]
- a1v = modl[dict.doc2bow(a1)]
- arv = modl[dict.doc2bow(ar)]
- idxq = similarities.MatrixSimilarity(modl[a0])
- 
- if a in mod .docvecs:
-  av = mod .docvecs [ a ]
-  for m in ms [ k ][ '0' ]:
-   if m in mod.wv.vocab:
-    print (k+';0;'+m+';'+str(dist (m, av)))
-  n1 = 0
-  for m in ms [ k ][ '1' ]:
-   if m in mod.wv.vocab:
-    print (k+';1;'+m+';'+str(dist (m, av)))
-    n1 += 1
-  for m in random.sample (list(mod.wv.vocab), n1):
-   print (k+';2;'+m+';'+str(dist (m, av)))
-
-q = [ dict.doc2bow( [ dictionary[i] ] ) for i in range(len(dict)) ]
+python3 fitXtl.py PAPkgQ.all1.a100.s2 200
+python3 measureTL.py PAPkgQ.all1.a100.s2.200 | gzip > outTL200.gz
 
 
-idxq = similarities.MatrixSimilarity(modl[q])
-v2 = modl [ dictionary.doc2bow(['https'])]
-v1 = modl [ dictionary.doc2bow(['readr'])]
-v = modl [ dictionary.doc2bow(['data.table'])]
-
-sims = sorted(enumerate(idxq[v]), key=lambda item: -item[1])
-for i in range(9):
- print (dictionary[sims[i][0]]+";" + str(sims[i][1]))
-
-sims1 = sorted(enumerate(idxq[v1]), key=lambda item: -item[1])
-for i in range(9):
- print (dictionary[sims1[i][0]]+";" + str(sims1[i][1]))
-
-sims2 = sorted(enumerate(idxq[v2]), key=lambda item: -item[1])
-for i in range(9):
- print (dictionary[sims2[i][0]]+";" + str(sims2[i][1]))
-
-#dict.token2id['collections.Counter']
-#q = [ dict.doc2bow( [ dict [i] ] ) for i in range(len(dict)) ]
+python3 fitXl.py PAPkgQ.all1.a100.s2 200
+python3 measureL.py PAPkgQ.all1.a100.s2 200 | gzip > PAPkgQ.all1.a100.s2.200.l.gz
+python3 measureLw.py PAPkgQ.all1.a100.s2.200 200 | gzip > PAPkgQ.all1.a100.s2.200.lw.gz &
+x = read.table("PAPkgQ.all1.a100.s2.200.l.gz",sep=";",quote="",comment.char="");
+tapply(x$V3-x$V4,x$V2,mean)
+          C          Cs           F          Go          JS          PY 
+ 0.04632535  0.28855093  0.10609692  0.28309173  0.05586361  0.27987579 
+       PYml           R        Rust       Scala         ipy        java 
+-0.02548492  0.13212877  0.17607847  0.29022274  0.17760522  0.26892660 
+         jl          pl          rb 
+ 0.32896277  0.15910557  0.24831300 
 
 
-idxq = similarities.MatrixSimilarity(modl[q])
-v2 = modl [ dictionary.doc2bow(['https']) ]
-v1 = modl [ dictionary.doc2bow(['readr'])]
-v = modl [ dictionary.doc2bow(['data.table'])]
 
-sims = sorted(enumerate(idxq[v]), key=lambda item: -item[1])
-for i in range(9):
- print (dictionary[sims[i][0]]+";" + str(sims[i][1]))
+x = read.table("outTL.gz",sep=";",quote="",comment.char="");
+tapply(x$V3-x$V4,x$V2,mean)
+          C          Cs           F          Go          JS          PY 
+-0.21461239  0.08930588 -0.21732605  0.24538127 -0.13513573  0.06550960 
+       PYml           R        Rust       Scala         ipy        java 
+-0.50100756 -0.06974246 -0.10660764  0.34508303 -0.16477210  0.34200420 
+         jl          pl          rb 
+ 0.01855353 -0.18015754 -0.05019054 
 
-sims1 = sorted(enumerate(idxq[v1]), key=lambda item: -item[1])
-for i in range(9):
- print (dictionary[sims1[i][0]]+";" + str(sims1[i][1]))
 
-sims2 = sorted(enumerate(idxq[v2]), key=lambda item: -item[1])
-for i in range(9):
- print (dictionary[sims2[i][0]]+";" + str(sims2[i][1]))
+x = read.table("outTL200.gz",sep=";",quote="",comment.char="");
+tapply(x$V3-x$V4,x$V2,mean)
+          C          Cs           F          Go          JS          PY 
+-0.03125579  0.11405128  0.08592825  0.20873489  0.02757071  0.07878625 
+       PYml           R        Rust       Scala         ipy        java 
+-0.07329168  0.31942955  0.14897410  0.22820712  0.02918253  0.22073817 
+         jl          pl          rb 
+ 0.65453597  0.15449072  0.08948351 
+tapply(x$V3-x$V4,x$V2,tst)
+tapply(x$V3-x$V4,x$V2,tst1)
+          C          Cs           F          Go          JS          PY 
+-0.03257187  0.11162231  0.06487618  0.20390927  0.02601491  0.07733086 
+       PYml           R        Rust       Scala         ipy        java 
+-0.07410297  0.30488895  0.14366189  0.22053701  0.02658852  0.21860786 
+         jl          pl          rb 
+ 0.63368595  0.14702762  0.08522763 
+
+tst1 = function(x){
+t.test(x)$conf.int[1]
+}
+
+
+x = read.table("outTL200w.gz",sep=";",quote="",comment.char="");
+a=tapply(x$V5, list(x$V2,x$V3), mean)
+a[,1]-a[,2]
+           C           Cs            F           Go           JS           PY 
+-0.019672801  0.074659665 -0.022534870  0.171725759  0.008179137  0.021358713 
+        PYml            R         Rust        Scala          ipy         java 
+-0.046703193  0.365836670  0.221378647  0.056461092  0.042849782  0.107786637 
+          jl           pl           rb 
+ 0.318082226  0.240054656  0.023368801 
+
+a=tapply(x$V5, list(x$V2,x$V3), length)
+
+#see if athors with fewer apis matter
+sel = x$V2=='PY'
+a=tapply(x$V5[sel], list(as.character(x$V1[sel]),as.character(x$V3[sel])), length)
+ss = a[,1]<87;
+nn = names(a[ss,1])
+x1=x[sel,]
+x2=x1[match(x$V1,nn,nomatch=0)>0,]
+tapply(x2$V5, x2$V3, mean)
+         0          1 
+0.05748117 0.02799630 
+
+
+for i in 0 2
+do 
+python3 measureR.py s1 100 10 3 $i > s1.100.10.3.$i
+python3 measureR.py s1 200 10 3 $i > s1.200.10.3.$i
+python3 measureR.py s1 200 10 20 $i > s1.200.10.20.$i
+python3 measureR.py s2 100 10 3 $i > s2.100.10.3.$i
+python3 measureR.py s2 200 10 3 $i > s2.200.10.3.$i
+python3 measureR.py s2 200 10 20 $i > s2.200.10.20.$i
+
+python3 measureR.py s1 200 20 20 $i > as1.200.20.20.$i &
+python3 measureR.py s1 200 20 3 $i > as1.200.20.3.$i &
+python3 measureR.py s2 200 20 20 $i > as2.200.20.20.$i &
+python3 measureR.py s2 200 20 3 $i > as2.200.20.3.$i &
+done
+
+for (f in c("as2.200.20.20.0","as2.200.20.3.0","as2.200.20.20.2","as1.200.20.3.0","as1.200.20.3.2")){
+  x = read.table(f,sep=";",quote="",comment.char="");
+  print (c(f, tapply(x$V5,x$V3,mean)))
+}
+
+python3 measureRdm.py s1 100 30 20 0 > dms1.100.30.20.0
+python3 measureRdm.py s1 100 30 20 1 > dms1.100.30.20.1
+python3 measureRdm.py s1 100 30 20 3 > dms1.100.30.20.3
+python3 measureRdm.py s2 100 30 20 0 > dms2.100.30.20.0
+python3 measureRdm.py s2 100 30 20 16 > dms2.100.30.20.16
+
+python3 measureR.py s1 60 30 20 0 > s1.60.30.20.0
+python3 measureR.py s1 60 30 20 1 > s1.60.30.20.1
+
+
+f='dms1.100.30.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+         0          1          2 
+0.04370712 0.04802327 0.25997248 
+
+
+f='dms1.100.30.20.1'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.04024299 0.03221836 0.16051011 
+
+f='dms1.100.30.20.3'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+-0.003097008 -0.020132358  0.130780851
+
+f='dms2.100.30.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+           0            1            2 
+6.159344e-06 9.600476e-03 4.704827e-01 
+
+f='dms2.100.30.20.16'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+          0           1           2 
+-0.03067361 -0.08871602  0.09374274 
+
+
+f='s2.60.30.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.4756433 0.5527332 0.4325226
+
+##################
+f='s2.60.30.20.25'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2703879 0.3146884 0.1867165
+##################
+
+
+f='s1.60.30.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3979975 0.4791224 0.3991035 
+
+f='s1.60.30.20.1'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3185505 0.3947943 0.2949547 
+
+python3 measureR.py s1 100 100 20 0 > s1.100.100.20.0
+python3 measureR.py s1 100 100 3 0 > s1.100.100.3.0
+python3 measureRdm.py s1 100 100 20 0 > dms1.100.100.20.0
+python3 measureRdm.py s1 100 100 3 0 > dms1.100.100.3.0
+python3 measureRdm.py s1 200 100 20 6 > dms1.200.100.20.6
+
+f='dms1.100.100.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.05413300 0.05514304 0.25653314 
+
+f='dms1.100.100.3.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.02718822 0.05469516 0.17476730
+
+f='dms1.200.100.20.6'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.028869464 -0.006965821  0.102283144
+
+##################
+f='s1.100.100.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3496247 0.4253337 0.3716085
+
+f='s1.100.100.3.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2759571 0.3595913 0.2865257 
+##################
+
+
+python3 measureR.py s1 200 50 50 0 > s1.200.50.50.0
+python3 measureR.py s1 200 100 20 0 > s1.200.100.20.0
+python3 measureRnm.py s1 100 100 20 0 > nms1.100.100.20.0
+
+python3 measureR.py s1 100 100 3 4 > s1.100.100.3.4
+python3 measureRnm.py s1 100 100 20 1 > nms1.100.100.20.1
+
+f='s1.200.50.50.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3855742 0.4399539 0.4472965
+f='s1.200.100.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2897465 0.3533489 0.3480027 
+
+f='nms1.100.100.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3486340 0.4246614 0.3711284 
+
+f='s1.100.100.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3496247 0.4253337 0.3716085
+
+f='s1.100.10.3.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.5264899 0.5609438 0.6013127
+
+f='s1.100.100.3.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.5264899 0.5609438 0.6013127
+
+
+f='s1.200.50.50.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3855742 0.4399539 0.4472965 
+
+f='s1.200.50.50.5'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2145872 0.2632262 0.2146869
+
+f='s1.200.10.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.6147229 0.6447941 0.7171350
+
+f='s1.60.30.20.0'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.3979975 0.4791224 0.3991035
+
+f='nms1.100.100.20.1'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2666719 0.3349231 0.2682732
+
+f='s1.100.100.3.4'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2054330 0.2879944 0.1965531 
+
+f='s1.100.100.3.7'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.2039945 0.2862087 0.1899200
+
+
+
+#PR resolution
+python3 measureAPR.py > outAPR
+x = read.table("outAPR",sep=";",quote="",comment.char="");
+
+y = x$V3/(x$V3+x$V4)
+
+
+y = cbind( x$V3, x$V4)
+m = glm(y ~ x$V5,family=binomial)
+summary(m)
+Call:
+glm(formula = y ~ x$V5, family = binomial)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-3.1070  -1.3704  -0.0973   0.9925   3.7900  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -1.0295     0.3790  -2.717   0.0066 ** 
+x$V5          3.6884     0.7495   4.921  8.6e-07 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 345.97  on 170  degrees of freedom
+Residual deviance: 320.09  on 169  degrees of freedom
+AIC: 361.18
+
+Number of Fisher Scoring iterations: 4
+
+#Joongi Kim <joongi@an.kaist.ac.kr>;abbr_deasync;0;1;0.2763929839195558
