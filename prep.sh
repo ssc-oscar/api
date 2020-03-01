@@ -184,6 +184,13 @@ for la in C F jl R ipy pl Cs Go Rust Scala PY JS java rb
 do zcat PtAPkgQ$la.s | perl ~/bin/grepField.perl au100.gz 3
 done | gzip > all.a100.gz
 
+cat PRdata_new.csv | perl ~/lookup/mp.perl 0 /da0_data/basemaps/gz/a2AQ.s > PRdata_newA.csv
+cut -d\; -f1 PRdata_newA.csv | lsort 1G -u | gzip > au.prs
+for la in JS C F jl R ipy pl Cs Go Rust Scala PY java rb
+do zcat /da4_data/play/api/PtAPkgQ$la.s | perl ~/bin/grepField.perl au.prs 3 | gzip > PtaPkgQ$la.prs.s
+done 
+
+
 zcat *A*.cnt | grep ^a | awk -F\; '{print $4+$3";"$2}' | lsort 30G -t\; -rn |gzip > topA
 zcat topA|awk -F\; '{if ($1>50000){print $2}}' | gzip | lsort 10G -u > topA.50K
 zcat au100.gz | lsort 10G -t\; -k1,1 -u | join -t\; -v1 - <(cat topA.50K | lsort 1G -t\; -k1,1)| gzip > au100-50k.gz
@@ -355,8 +362,38 @@ mod.wv.most_similar('http')
 
 import gzip,collections,gensim.models.doc2vec,math
 from gensim.models import Doc2Vec, Word2Vec
-f='word2vec.20.1.3.PAPkgQJS.0.b'
+
+python3 fitXw.py PAPkgQR.s1 1 100 50 20 100 200
+
+mod = Word2Vec(docs,sg=dm,size=vs, window=ws, negative=ns, min_count=mc, workers=cores,iter=iter)
+mod.save("word2vec."+str(dm)+"."+str(vs)+"."+str(ws)+"."+str(ns)+"."+str(mc)+"."+str(iter)+"."+lst)
+f='word2vec.100.50.20.100.200.0.PAPkgQR.s1' #garbage sg=0
+f='word2vec.100.50.20.100.200.1.PAPkgQR.s1' #decent sg=1
+>>> mod.most_similar('data.table')
+[('dplyr', 0.8867905139923096), ('stringr', 0.8839394450187683), ('plyr', 0.8830145001411438), ('magrittr', 0.8689486384391785), ('magclass', 0.8649991154670715), ('readr', 0.8637726902961731), ('tidyr', 0.8611730337142944), ('lubridate', 0.8585350513458252), ('gWidgetsWWW2', 0.8545087575912476), ('lucode', 0.852830171585083)]
+>>> mod.most_similar('readr')
+[('magrittr', 0.9195265769958496), ('tidyr', 0.8952105641365051), ('dplyr', 0.8914402723312378), ('ggplot2', 0.8837970495223999), ('stringr', 0.8687031865119934), ('data.table', 0.8637727499008179), ('plotly', 0.8532767295837402), ('magclass', 0.852198600769043), ('lucode', 0.8505121469497681), ('plyr', 0.841021716594696)]
+
+
+f='word2vec.1.100.50.20.100.200.PAPkgQR.s1' # OK
 mod = Word2Vec.load (f)
+mod.most_similar('data.table')
+mod.most_similar('readr')
+[('dplyr', 0.838019609451294), ('stringr', 0.7983173131942749), ('plyr', 0.7869787216186523), ('ggplot2', 0.7796253561973572), ('magrittr', 0.7705162167549133), ('reshape2', 0.7650773525238037), ('tidyr', 0.7562291622161865), ('readr', 0.7183531522750854), ('scales', 0.7113677263259888), ('tidyverse', 0.7113019227981567)]
+>>> mod.most_similar('readr')
+[('dplyr', 0.8551141023635864), ('magrittr', 0.8088136911392212), ('tidyr', 0.8009055852890015), ('stringr', 0.7933487892150879), ('ggplot2', 0.7563961148262024), ('data.table', 0.7183531522750854), ('tidyverse', 0.7072793841362), ('readxl', 0.6874278783798218), ('plotly', 0.6379566192626953), ('scales', 0.6288162469863892)]
+f='word2vec.0.100.50.20.100.200.PAPkgQR.s1'
+mod = Word2Vec.load (f)
+mod.most_similar('data.table')  # OK
+mod.most_similar('readr')
+[('dplyr', 0.6934608221054077), ('stringr', 0.6257824301719666), ('plyr', 0.6186755895614624), ('readr', 0.5545837879180908), ('tidyr', 0.5514156818389893), ('ggplot2', 0.5356006622314453), ('reshape2', 0.5290185809135437), ('lubridate', 0.5161994695663452), ('scales', 0.5158300399780273), ('magrittr', 0.4615442454814911)]
+>>> mod.most_similar('readr')
+[('dplyr', 0.6838119626045227), ('stringr', 0.6082045435905457), ('tidyverse', 0.5811571478843689), ('tidyr', 0.5662992596626282), ('data.table', 0.5545837879180908), ('lubridate', 0.531836748123169), ('magrittr', 0.5190625190734863), ('ggplot2', 0.4508250951766968), ('readxl', 0.42567265033721924), ('forcats', 0.3814961314201355)]
+
+
+
+
+f='word2vec.20.1.3.PAPkgQJS.0.b'
 mod.most_similar('http')
 [('color-namer', 0.8891410827636719), ('easyyoutubedownload', 0.8820397257804871), ('socketio', 0.8606370091438293), ('https', 0.858386754989624), ('ffmetadata', 0.8539266586303711), ('tress', 0.8495419025421143), ('lwip', 0.8478525280952454), ('data-utils', 0.847440242767334), ('render', 0.8417345285415649), ('sharedb-mingo-memory', 0.836542546749115)]
 mod.most_similar('https')
@@ -1075,6 +1112,10 @@ f='dms1.200.100.20.6'
 x = read.table(f,sep=";",quote="",comment.char="");
 print (tapply(x$V5,x$V3,mean))
 0.028869464 -0.006965821  0.102283144
+f='dms1.200.100.20.24'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.1462254 0.1024042 0.1406151
 
 ##################
 f='s1.100.100.20.0'
@@ -1135,11 +1176,16 @@ f='s1.200.50.50.5'
 x = read.table(f,sep=";",quote="",comment.char="");
 print (tapply(x$V5,x$V3,mean))
 0.2145872 0.2632262 0.2146869
+f='s1.200.50.50.21'
+x = read.table(f,sep=";",quote="",comment.char="");
+print (tapply(x$V5,x$V3,mean))
+0.0924019 0.1303114 0.1005268 
 
 f='s1.200.10.20.0'
 x = read.table(f,sep=";",quote="",comment.char="");
 print (tapply(x$V5,x$V3,mean))
 0.6147229 0.6447941 0.7171350
+
 
 f='s1.60.30.20.0'
 x = read.table(f,sep=";",quote="",comment.char="");
@@ -1196,3 +1242,151 @@ AIC: 361.18
 Number of Fisher Scoring iterations: 4
 
 #Joongi Kim <joongi@an.kaist.ac.kr>;abbr_deasync;0;1;0.2763929839195558
+
+#PR resolution
+#try a more careful
+Fit JS model on past data, predict acceptance on future
+la=JS 
+for cut in 1487226933 1503005733 1518784533
+do 
+zcat PtAPkgQ$la.prs.s1 | perl -e 'while(<STDIN>){chop(); ($p,$la,$t,$a,@ms)=split(/;/);if ($t < '$cut'){ for $m (@ms){$k{"$p;$la;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > PAPkgQ$la.prs.s2.$cut
+zcat PtAPkgQ$la.prs.s1 | perl -e 'while(<STDIN>){chop(); ($p,$la,$t,$a,@ms)=split(/;/);if ($t >= '$cut'){ for $m (@ms){$k{"$p;$la;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > PAPkgQ$la.prs.s4.$cut
+done
+
+for cut in 1487226933 1503005733 1518784533
+do perl cmpAprs.perl JS $cut | gzip > PAPkgQJS.prs.sAD.$cut
+done
+
+for cut in 1487226933 1503005733 1518784533
+do for mn in 3 10 100
+ do python3 measureAPprs.py $cut $mn 0 50 > outJSprs.$cut.$mn.0.50
+done; done
+for cut in 1518784533
+do for mn in 3 10 100
+ do python3 measureAPprs.py $cut $mn 0 20 > outJSprs.$cut.$mn.0.20
+done; done
+
+cut=1518784533
+mn=3
+python3 measureAPprs.py $cut $mn 7 20 > outJSprs.$cut.$mn.7.20
+x=read.table("outJSprs.1518784533.3.7.20",sep=";",quote="")
+summary(glm(y~sim,family=binomial))$coefficients
+              Estimate Std. Error   z value     Pr(>|z|)
+(Intercept) -0.9536817  0.1373422 -6.943838 3.815887e-12
+sim          1.2666900  0.2946566  4.298869 1.716719e-05
+> summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
+                  Estimate Std. Error   z value     Pr(>|z|)
+(Intercept)     -0.9832588  0.1377844 -7.136210 9.593913e-13
+sim              1.0959133  0.3019879  3.628997 2.845242e-04
+I(x$V6 > 0)TRUE  0.2738509  0.1098017  2.494049 1.262951e-02
+
+
+
+> dim(x)
+[1] 819  10
+> sum(x$V8+x$V9)
+[1] 2663
+x=read.table("outJSprs.1518784533.3.0.50",sep=";",quote="")
+
+x=read.table("outJSprs.1518784533.100.0.20",sep=";",quote="")
+summary(glm(y~sim,family=binomial))$coefficients
+              Estimate Std. Error   z value     Pr(>|z|)
+(Intercept) -0.9000813  0.1474172 -6.105672 1.023688e-09
+sim          0.9594344  0.2695859  3.558919 3.723848e-04
+> summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
+                  Estimate Std. Error   z value     Pr(>|z|)
+(Intercept)     -0.9293249  0.1481234 -6.273990 3.519110e-10
+sim              0.7989229  0.2763595  2.890883 3.841611e-03
+I(x$V6 > 0)TRUE  0.2952756  0.1093530  2.700207 6.929626e-03
+
+
+x=read.table("outJSprs.1518784533.10.0.20",sep=";",quote="")
+
+x=read.table("outJSprs.1518784533.3.0.20",sep=";",quote="")
+summary(glm(y~sim,family=binomial))$coefficients
+              Estimate Std. Error   z value     Pr(>|z|)
+(Intercept) -0.9615074  0.1606088 -5.986643 2.142162e-09
+sim          1.0347529  0.2845941  3.635890 2.770228e-04
+summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
+                  Estimate Std. Error   z value     Pr(>|z|)
+(Intercept)     -0.9984659  0.1617249 -6.173853 6.664567e-10
+sim              0.8898408  0.2899991  3.068426 2.151898e-03
+I(x$V6 > 0)TRUE  0.3033015  0.1085834  2.793258 5.218000e-03
+
+
+x=read.table("outJSprs.1518784533.100.0.50",sep=";",quote="")
+x=read.table("outJSprs.1518784533.0.0.50",sep=";",quote="")
+
+x=read.table("outJSprs.1518784533.3.0.50",sep=";",quote="")
+x=x[x$V8+x$V9>0,]
+#response
+y=cbind(x$V9,x$V8)
+sim=x$V10
+summary(glm(y~sim,family=binomial))$coefficients
+              Estimate Std. Error   z value     Pr(>|z|)
+(Intercept) -0.9081947  0.1523620 -5.960768 2.510556e-09
+sim          0.9777273  0.2806686  3.483565 4.947826e-04
+
+summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
+                  Estimate Std. Error   z value     Pr(>|z|)
+(Intercept)     -0.9393741  0.1530750 -6.136691 8.425798e-10
+sim              0.8169845  0.2869315  2.847316 4.408964e-03
+I(x$V6 > 0)TRUE  0.3002647  0.1090680  2.753006 5.905081e-03
+> dim(x)
+[1] 477  10
+> sum(x$V8+x$V9)
+[1] 1567
+
+
+
+
+######################
+stats
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da?_data/play/api/PtAPkgQ$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgQ$la.nm;   done
+F;1714314;23179;16084
+jl;1173066;16029;32875
+R;6591806;325797;501196
+ipy;10480954;630743;983169
+pl;21561320;456107;558712
+Rust;12400022;257072;305284
+Cs;219984011;1864720;2923567
+Go;106791380;392871;597846
+Scala;37173969;164111;215178
+PY;560726046;4185716;6509696
+JS;140972726;3291058;7527168
+rb;85990225;1164335;2386418
+java;1119433526;4518005;7049986
+C;2019398881;3339816;4580319
+
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {print "'$la'",(c[0]+c[1]+c[2]+c[3]+c[4]+c[5]+c[6]+c[7]+c[8]+c[9])/n,n,$1}'; done
+F 0.864287 1714314 106
+jl 0.918882 1173066 108
+R 0.953017 6591806 117
+ipy 0.76009 10480954 117
+pl 0.958241 21561320 109
+Rust 0.944941 12400022 53
+Cs 0.844412 219984011 150
+Go 0.841157 106791380 1362
+Scala 0.765806 37173969 124
+PY 0.814464 560726046 1001
+JS 0.791007 140972726 10014
+rb 0.978319 85990225 1002
+java 0.574622 1119433526 1004
+C 0.731285 2019398881 1007
+
+for la in F ipy Scala JS java; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<25;i++)v+=c[i]; print "'$la'",v/n,n,$1}';done
+ipy 0.981094 10480954 117
+Scala 0.978922 37173969 124
+JS 0.889159 140972726 10014
+java 0.87325 1119433526 1004
+
+for la in F ipy Scala JS java; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<50;i++)v+=c[i]; print "'$la'",v/n,n,$1}';done
+F 0.996817 1714314 106
+ipy 0.999316 10480954 117
+Scala 0.998829 37173969 124
+JS 0.920681 140972726 10014
+java 0.973206 1119433526 1004
+
+
+dm=0
+The doc-vectors are obtained by training a neural network on the synthetic task of predicting a center word based an average of both context word-vectors and the full document’s doc-vector.
