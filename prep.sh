@@ -1245,7 +1245,53 @@ Number of Fisher Scoring iterations: 4
 
 #PR resolution
 #try a more careful
-Fit JS model on past data, predict acceptance on future
+
+#####################################
+#do full model using all languages on past data, predict acceptance on future
+
+for cut in 1487226933 1503005733 1518784533
+do 
+zcat prs.all.s1 | perl -e 'while(<STDIN>){chop(); ($p,$la,$t,$a,@ms)=split(/;/);if ($t < '$cut'){ for $m (@ms){$k{"$p;$la;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.all.s2.$cut
+zcat prs.all.s1 | perl -e 'while(<STDIN>){chop(); ($p,$la,$t,$a,@ms)=split(/;/);if ($t >= '$cut'){ for $m (@ms){$k{"$p;$la;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.all.s4.$cut
+done
+
+
+for cut in 1487226933 1503005733 1518784533
+do perl cmpAprs.perl prs.all $cut | gzip > prs.all.sAD.$cut
+done
+for cut in 1518784533
+do python3 measureAPprs.py doc2vec.100.50.20.3.prs.all.s1.0 prs.all.sAD.$cut > out.prs.$cut.3.50
+ python3 measureAPprs.py doc2vec.100.50.20.100.$cut.prs.all.s1.0 prs.all.sAD.1518784533 > out.prs.$cut.100.50
+ python3 measureAPprs.py doc2vec.100.50.20.100.$cut.prs.all.s1.1 prs.all.sAD.1518784533 > out.prs.$cut.100.50.1
+ python3 measureAPprs.py doc2vec.100.50.20.3.prs.all.s1.0 prs.all.sAD.$cut > out.prs.$cut.3.50.2
+done
+x=read.table("out.prs.1518784533.100.50.1",sep=";",quote="",comment.char="");
+#this does not seem to capture enough specificity, removing rere (< 100 instances) APIs appears to hurt  
+
+x=read.table("out.prs.1518784533.3.50.1",sep=";",quote="",comment.char="");
+x=read.table("out.prs.1518784533.3.50.2",sep=";",quote="",comment.char="");
+x=x[x$V8+x$V9>0,]
+#response
+y=cbind(x$V9,x$V8)
+sim=x$V10
+summary(glm(y~sim,family=binomial))$coefficients
+             Estimate Std. Error   z value     Pr(>|z|)
+(Intercept) -1.014229  0.1348882 -7.519030 5.518402e-14
+sim          1.215554  0.3003169  4.047571 5.175199e-05
+>  summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
+                  Estimate Std. Error   z value     Pr(>|z|)
+(Intercept)     -1.0078023  0.1352536 -7.451207 9.249018e-14
+sim              0.9044530  0.3108142  2.909947 3.614897e-03
+I(x$V6 > 0)TRUE  0.3796409  0.0937062  4.051396 5.091301e-05
+
+
+dim(x)
+[1] 766  10
+sum(x$V8+x$V9)
+[1] 2334
+######################################
+
+Fit JS model only on past data, predict acceptance on future
 la=JS 
 for cut in 1487226933 1503005733 1518784533
 do 
@@ -1257,6 +1303,7 @@ for cut in 1487226933 1503005733 1518784533
 do perl cmpAprs.perl JS $cut | gzip > PAPkgQJS.prs.sAD.$cut
 done
 
+
 for cut in 1487226933 1503005733 1518784533
 do for mn in 3 10 100
  do python3 measureAPprs.py $cut $mn 0 50 > outJSprs.$cut.$mn.0.50
@@ -1266,6 +1313,8 @@ do for mn in 3 10 100
  do python3 measureAPprs.py $cut $mn 0 20 > outJSprs.$cut.$mn.0.20
 done; done
 
+
+summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
 cut=1518784533
 mn=3
 python3 measureAPprs.py $cut $mn 7 20 > outJSprs.$cut.$mn.7.20
