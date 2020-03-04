@@ -401,8 +401,8 @@ mod.most_similar('https')
 
 
 
-
-#all
+#### 
+#all tl - tfidf + lsi
 python3 fitXtl.py PAPkgQ.all1.a100.0.s2
 data.table;1.0
 lubridate;0.9246081
@@ -499,8 +499,9 @@ body-parse;0.9923428
 monk;0.992233
 multer-s3;0.99221814
 
-
+####################################
 #Market basket:
+####################################
 zcat PAPkgQ.all1.a100.0.s2 | cut -d\; -f3- > tr
 
 R --no-save
@@ -604,8 +605,14 @@ inspect(sort(res850.05, by="lift")[1:7])
 [6] 19.78974 2534 
 [7] 19.78974 2536 
 
+####################################
+####################################
+####################################
+####################################
+####################################
 
 #do evaluation: get diffs, new apis, projects, authors
+a100 - authors that had between 100 and 25K blobs changed
 
 for i in {0..31}; do zcat PAPkgQ.all2.a100.$i.s[24] | perl -e 'while(<STDIN>){chop(); ($p,$la,$a,@ms)=split(/;/);for $m (@ms){$m =~ s/^\s+//; $m =~ s/\s+$//; $k{"$p;$la"}{$m}++}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > PAPkgQ.all2.a100.$i.sPA; done &
 for i in {0..31}; do perl cmp.perl $i | gzip > PAPkgQ.all2.a100.$i.sPD; done
@@ -930,7 +937,7 @@ print (apply(a, c(2,3),mean,na.rm=T));
 2 0.2278331
 
 # Do collaborator (new cop-project) similarity prediction?
-
+#See how lsi works
 # Do all the evaluations using tfidf + lsi
 python3 fitXtl.py PAPkgQ.a100.s2
 python3 measureTL.py PAPkgQ.all1.a100.s2 | gzip > outTL.gz
@@ -1243,12 +1250,31 @@ Number of Fisher Scoring iterations: 4
 
 #Joongi Kim <joongi@an.kaist.ac.kr>;abbr_deasync;0;1;0.2763929839195558
 
+# do a full model not on pairs
+python3 fitXa100.py PtAPkgQ 100 50 20 3 1518784533
+
+records so far after C:428089712
+records so far after Cs:454179878
+records so far after F:454428020
+records so far after Go:477059731
+records so far after JS:483668796
+records so far after PY:545977933
+records so far after R:546676125
+records so far after Rust:549318575
+records so far after Scala:558835749
+records so far after ipy:559437749
+records so far after java:742917966
+records so far after jl:743145989
+records so far after pl:747243704
+records so far after rb:754892793
+records:754892793
+
+
 #PR resolution
 #try a more careful
-
 #####################################
 #do full model using all languages on past data, predict acceptance on future
-
+# Put this in the paper
 for cut in 1487226933 1503005733 1518784533
 do 
 zcat prs.all.s1 | perl -e 'while(<STDIN>){chop(); ($p,$la,$t,$a,@ms)=split(/;/);if ($t < '$cut'){ for $m (@ms){$k{"$p;$la;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.all.s2.$cut
@@ -1262,8 +1288,9 @@ done
 for cut in 1518784533
 do python3 measureAPprs.py doc2vec.100.50.20.3.prs.all.s1.0 prs.all.sAD.$cut > out.prs.$cut.3.50
  python3 measureAPprs.py doc2vec.100.50.20.100.$cut.prs.all.s1.0 prs.all.sAD.1518784533 > out.prs.$cut.100.50
- python3 measureAPprs.py doc2vec.100.50.20.100.$cut.prs.all.s1.1 prs.all.sAD.1518784533 > out.prs.$cut.100.50.1
- python3 measureAPprs.py doc2vec.100.50.20.3.prs.all.s1.0 prs.all.sAD.$cut > out.prs.$cut.3.50.2
+ python3 measureAPprs.py doc2vec.100.50.20.3.prs.all.s1.2 prs.all.sAD.$cut > out.prs.$cut.3.50.2
+ python3 measureAPprs.py doc2vec.100.50.20.3.prs.all.s1.3 prs.all.sAD.$cut > out.prs.$cut.3.50.3
+ python3 measureAPprs.py doc2vec.100.50.20.3.$cut.prs.all.s1.5 prs.all.sAD.1518784533 > out.prs.$cut.3.50.5
 done
 x=read.table("out.prs.1518784533.100.50.1",sep=";",quote="",comment.char="");
 #this does not seem to capture enough specificity, removing rere (< 100 instances) APIs appears to hurt  
@@ -1276,13 +1303,25 @@ y=cbind(x$V9,x$V8)
 sim=x$V10
 summary(glm(y~sim,family=binomial))$coefficients
              Estimate Std. Error   z value     Pr(>|z|)
-(Intercept) -1.014229  0.1348882 -7.519030 5.518402e-14
-sim          1.215554  0.3003169  4.047571 5.175199e-05
+(Intercept) -1.021836  0.1279698 -7.984975 1.405512e-15
+sim          1.283114  0.2942174  4.361109 1.294048e-05
 >  summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
                   Estimate Std. Error   z value     Pr(>|z|)
-(Intercept)     -1.0078023  0.1352536 -7.451207 9.249018e-14
-sim              0.9044530  0.3108142  2.909947 3.614897e-03
-I(x$V6 > 0)TRUE  0.3796409  0.0937062  4.051396 5.091301e-05
+(Intercept)     -1.0091211  0.1281618 -7.873804 3.440166e-15
+sim              0.9553116  0.3065614  3.116216 1.831879e-03
+I(x$V6 > 0)TRUE  0.3659381  0.0944885  3.872832 1.075779e-04
+
+#overfit by now?
+x=read.table("out.prs.1518784533.3.50.5",sep=";",quote="",comment.char="");
+summary(glm(y~sim,family=binomial))$coefficients
+              Estimate Std. Error   z value     Pr(>|z|)
+(Intercept) -0.9738149  0.1199521 -8.118362 4.725167e-16
+sim          1.2446302  0.2920199  4.262141 2.024773e-05
+>  summary(glm(y~sim +I(x$V6 > 0),family=binomial))$coefficients
+                  Estimate Std. Error   z value     Pr(>|z|)
+(Intercept)     -0.9742389 0.12008804 -8.112706 4.950477e-16
+sim              0.9249281 0.30346857  3.047855 2.304814e-03
+I(x$V6 > 0)TRUE  0.3707065 0.09424937  3.933252 8.380424e-05
 
 
 dim(x)
@@ -1390,8 +1429,9 @@ I(x$V6 > 0)TRUE  0.3002647  0.1090680  2.753006 5.905081e-03
 
 
 ######################
-stats
+# report stats for the paper
 for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da?_data/play/api/PtAPkgQ$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgQ$la.nm;   done
+lang;delta;authors;projects
 F;1714314;23179;16084
 jl;1173066;16029;32875
 R;6591806;325797;501196
@@ -1407,7 +1447,32 @@ rb;85990225;1164335;2386418
 java;1119433526;4518005;7049986
 C;2019398881;3339816;4580319
 
+#total number of delta
+cat |cut -d\; -f2 | awk '{print i+=$1}'|tail -1
+4344392246
+
+#count distinct APIs
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da?_data/play/api/PtAPkgQ$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);for $m (@ms){$mm{$m}++;}} print "'$la';".(scalar(keys %mm))."\n";'   done
+F;55266
+jl;114038
+R;79190
+ipy;544464
+pl;57495
+Rust;97125
+Cs;6005837
+Go;1540313
+Scala;2895075
+PY;16032127
+JS;1180985
+rb;2053615
+java;77586461
+C;2483135
+cat | cut -d\; -f2 | awk '{print i+=$1}' | tail -1
+110725126
+
+#what fraction of delta has 10 or fewer APIs?
 for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {print "'$la'",(c[0]+c[1]+c[2]+c[3]+c[4]+c[5]+c[6]+c[7]+c[8]+c[9])/n,n,$1}'; done
+lanf fraction total maxAPisPerDelta
 F 0.864287 1714314 106
 jl 0.918882 1173066 108
 R 0.953017 6591806 117
@@ -1423,19 +1488,91 @@ rb 0.978319 85990225 1002
 java 0.574622 1119433526 1004
 C 0.731285 2019398881 1007
 
-for la in F ipy Scala JS java; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<25;i++)v+=c[i]; print "'$la'",v/n,n,$1}';done
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<25;i++)v+=c[i]; print "'$la'",v/n,n,$1}';done
 ipy 0.981094 10480954 117
 Scala 0.978922 37173969 124
 JS 0.889159 140972726 10014
 java 0.87325 1119433526 1004
 
-for la in F ipy Scala JS java; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<50;i++)v+=c[i]; print "'$la'",v/n,n,$1}';done
+#what fraction of delta has 50 or fewer APIs?
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<50;i++)v+=c[i]; print "'$la'",v/n,n,$1}';done
 F 0.996817 1714314 106
+jl 0.994654 1173066 108
+R 0.999581 6591806 117
 ipy 0.999316 10480954 117
+pl 0.999989 21561320 109
+Rust 0.999999 12400022 53
+Cs 0.99971 219984011 150
+Go 0.999108 106791380 1362
 Scala 0.998829 37173969 124
+PY 0.997004 560726046 1001
 JS 0.920681 140972726 10014
+rb 0.999357 85990225 1002
 java 0.973206 1119433526 1004
+C 0.998161 2019398881 1007
 
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {for (i=0; i<50;i++)v+=c[i]; for (i=0; i<25;i++)v25+=c[i];for (i=0; i<10;i++)v10+=c[i];print "'$la'",v10/n,v25/n,v/n,n,$1}';done
+F 0.864287 0.97831 0.996817 1714314 106
+jl 0.918882 0.982022 0.994654 1173066 108
+R 0.953017 0.996757 0.999581 6591806 117
+ipy 0.76009 0.981094 0.999316 10480954 117
+pl 0.958241 0.999547 0.999989 21561320 109
+Rust 0.944941 0.997445 0.999999 12400022 53
+Cs 0.844412 0.993558 0.99971 219984011 150
+Go 0.841157 0.988415 0.999108 106791380 1362
+Scala 0.765806 0.978922 0.998829 37173969 124
+PY 0.814464 0.977265 0.997004 560726046 1001
+JS 0.791007 0.889159 0.920681 140972726 10014
+rb 0.978319 0.996 0.999357 85990225 1002
+java 0.574622 0.87325 0.973206 1119433526 1004
+C 0.731285 0.965926 0.998161 2019398881 1007
+
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da4_data/play/api/PtAPkgQ$la.a100.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgQ$la.a100.nm;   done
+F;344552;1431;2219
+jl;504320;1160;7722
+R;1158873;7347;36983
+ipy;1811746;20687;79585
+pl;5113871;21069;68769
+Rust;6550473;18195;55199
+Cs;52313421;38619;281015
+Go;51279675;20645;124218
+Scala;12455617;8937;34664
+PY;128114928;82223;730013
+JS;15118273;58081;611156
+rb;12014953;24989;162232
+java;290099632;73443;546557
+C;602688210;65323;302328
+
+for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da4_data/play/api/PtAPkgQ$la.a10.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgQ$la.a10.nm;   done
+F;561214;3796;5190
+jl;753150;3512;13534
+R;2732365;28897;119376
+ipy;4202017;82677;257966
+pl;7920200;62996;148274
+Rust;8782373;48580;107879
+Cs;79621191;156816;708727
+Go;66153157;64152;248059
+Scala;17425527;24847;71368
+PY;207647121;344269;1866940
+JS;35773587;250915;1791320
+rb;24196791;97982;497732
+java;390303008;295725;1429521
+C;822861651;242355;833121
 
 dm=0
 The doc-vectors are obtained by training a neural network on the synthetic task of predicting a center word based an average of both context word-vectors and the full document’s doc-vector.
+
+
+#Evaluating against qualitative data
+
+m675.py > m675.0.out
+x=read.table('m675.0.out',sep=";")
+x$rv = apply(x[,-c(1,2)],1,mean)
+tapply(x$V2,x$V1,mean)
+    mongo     react  socketio 
+0.3124272 0.2585274 0.3651081
+ 
+tapply(x$V2-x$rv,x$V1,mean)
+    mongo     react  socketio 
+0.2054196 0.1810224 0.2761625 
+
