@@ -946,63 +946,56 @@ python3 fitXtl.py PAPkgQ.all1.a100.s2 200
 python3 measureTL.py PAPkgQ.all1.a100.s2.200 | gzip > outTL200.gz
 
 
+#pure LSI
 python3 fitXl.py PAPkgQ.all1.a100.s2 200
 python3 measureL.py PAPkgQ.all1.a100.s2 200 | gzip > PAPkgQ.all1.a100.s2.200.l.gz
 python3 measureLw.py PAPkgQ.all1.a100.s2.200 200 | gzip > PAPkgQ.all1.a100.s2.200.lw.gz &
+
 x = read.table("PAPkgQ.all1.a100.s2.200.l.gz",sep=";",quote="",comment.char="");
-tapply(x$V3-x$V4,x$V2,mean)
-          C          Cs           F          Go          JS          PY 
- 0.04632535  0.28855093  0.10609692  0.28309173  0.05586361  0.27987579 
-       PYml           R        Rust       Scala         ipy        java 
--0.02548492  0.13212877  0.17607847  0.29022274  0.17760522  0.26892660 
-         jl          pl          rb 
- 0.32896277  0.15910557  0.24831300 
+x=x[x$V2!="PYml",]
+x$la=as.character(x$V2)
 
+mttp = function (x) t.test(x)$p.value
+mtte = function (x) t.test(x)$estimate
 
+tapply(x$V3-x$V4,x$la,mttp)
+tapply(x$V3-x$V4,x$la,mtte)
 
-x = read.table("outTL.gz",sep=";",quote="",comment.char="");
-tapply(x$V3-x$V4,x$V2,mean)
-          C          Cs           F          Go          JS          PY 
--0.21461239  0.08930588 -0.21732605  0.24538127 -0.13513573  0.06550960 
-       PYml           R        Rust       Scala         ipy        java 
--0.50100756 -0.06974246 -0.10660764  0.34508303 -0.16477210  0.34200420 
-         jl          pl          rb 
- 0.01855353 -0.18015754 -0.05019054 
+            C            Cs             F            Go            JS 
+ 0.000000e+00  0.000000e+00  6.677127e-21  0.000000e+00  0.000000e+00 
+           PY             R          Rust         Scala           ipy 
+ 0.000000e+00 1.561532e-271  0.000000e+00  0.000000e+00  0.000000e+00 
+         java            jl            pl            rb 
+ 0.000000e+00 1.925726e-166  0.000000e+00  0.000000e+00 
+> tapply(x$V3-x$V4,x$la,mtte)
+         C         Cs          F         Go         JS         PY          R 
+0.04632535 0.28855093 0.10609692 0.28309173 0.05586361 0.27987579 0.13212877 
+      Rust      Scala        ipy       java         jl         pl         rb 
+0.17607847 0.29022274 0.17760522 0.26892660 0.32896277 0.15910557 0.24831300 
+
 
 
 x = read.table("outTL200.gz",sep=";",quote="",comment.char="");
-tapply(x$V3-x$V4,x$V2,mean)
+x=x[x$V2!="PYml",]
+x$la=as.character(x$V2)
+tapply(x$V3-x$V4,x$la,mttp)
+tapply(x$V3-x$V4,x$la,mtte)
+            C            Cs             F            Go            JS 
+ 0.000000e+00  0.000000e+00  5.367864e-15  0.000000e+00 7.749541e-261 
+           PY             R          Rust         Scala           ipy 
+ 0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00 2.434030e-106 
+         java            jl            pl            rb 
+ 0.000000e+00 3.571484e-309  0.000000e+00  0.000000e+00 
+> tapply(x$V3-x$V4,x$la,mtte)
           C          Cs           F          Go          JS          PY 
 -0.03125579  0.11405128  0.08592825  0.20873489  0.02757071  0.07878625 
-       PYml           R        Rust       Scala         ipy        java 
--0.07329168  0.31942955  0.14897410  0.22820712  0.02918253  0.22073817 
-         jl          pl          rb 
- 0.65453597  0.15449072  0.08948351 
-tapply(x$V3-x$V4,x$V2,tst)
-tapply(x$V3-x$V4,x$V2,tst1)
-          C          Cs           F          Go          JS          PY 
--0.03257187  0.11162231  0.06487618  0.20390927  0.02601491  0.07733086 
-       PYml           R        Rust       Scala         ipy        java 
--0.07410297  0.30488895  0.14366189  0.22053701  0.02658852  0.21860786 
-         jl          pl          rb 
- 0.63368595  0.14702762  0.08522763 
-
-tst1 = function(x){
-t.test(x)$conf.int[1]
-}
+          R        Rust       Scala         ipy        java          jl 
+ 0.31942955  0.14897410  0.22820712  0.02918253  0.22073817  0.65453597 
+         pl          rb 
+ 0.15449072  0.08948351 
 
 
-x = read.table("outTL200w.gz",sep=";",quote="",comment.char="");
-a=tapply(x$V5, list(x$V2,x$V3), mean)
-a[,1]-a[,2]
-           C           Cs            F           Go           JS           PY 
--0.019672801  0.074659665 -0.022534870  0.171725759  0.008179137  0.021358713 
-        PYml            R         Rust        Scala          ipy         java 
--0.046703193  0.365836670  0.221378647  0.056461092  0.042849782  0.107786637 
-          jl           pl           rb 
- 0.318082226  0.240054656  0.023368801 
 
-a=tapply(x$V5, list(x$V2,x$V3), length)
 
 #see if athors with fewer apis matter
 sel = x$V2=='PY'
@@ -1270,6 +1263,55 @@ records so far after rb:754892793
 records:754892793
 
 
+
+#still calculating, do binary instead
+python3 measureAPI.py 0 | gzip > doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0.api.gz
+python3 measureAPI.py 1 | gzip > doc2vec.200.1.5.PAPkgQ.all2.a100.b50.1.api.gz
+f='doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0.api.gz'
+x = read.table(f,sep=";",quote="",comment.char="");
+x=x[x$V2!='PYml',]
+x$V2=as.character(x$V2);
+#do by language - V3
+a = tapply(x$V4, list(x$V1,x$V2,x$V3), mean,na.rm=T);
+
+t.test(a[,2]-a[,3])
+
+
+
+python3 measureAP.py 0 | gzip > doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0.AP.gz &
+python3 measureAP.py 1 | gzip > doc2vec.200.1.5.PAPkgQ.all2.a100.b50.1.AP.gz &
+f='doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0.AP.gz'
+x = read.table(f,sep=";",quote="",comment.char="");
+a = tapply(x$V4, list(x$V1,x$V2), mean,na.rm=T);
+t.test(a[,2]-a[,3])
+t = 123.18, df = 36917, p-value < 2.2e-16
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ 0.1117263 0.1153392
+sample estimates:
+mean of x 
+0.1135327 
+
+
+
+python3 measurePA.py 0 | gzip > doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0.PA.gz &
+python3 measurePA.py 1 | gzip > doc2vec.200.1.5.PAPkgQ.all2.a100.b50.1.PA.gz &
+f='doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0.PA.gz'
+x = read.table(f,sep=";",quote="",comment.char="");
+a = tapply(x$V4, list(x$V1,x$V2), mean,na.rm=T);
+
+t.test(a[,2]-a[,3])
+t = 138.26, df = 55112, p-value < 2.2e-16
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ 0.1113763 0.1145795
+sample estimates:
+mean of x 
+0.1129779 
+
+
+
+
 #PR resolution
 #try a more careful
 #####################################
@@ -1449,7 +1491,7 @@ C;2019398881;3339816;4580319
 
 #total number of delta
 cat |cut -d\; -f2 | awk '{print i+=$1}'|tail -1
-4344392246
+4,344,392,246
 
 #count distinct APIs
 for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da?_data/play/api/PtAPkgQ$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);for $m (@ms){$mm{$m}++;}} print "'$la';".(scalar(keys %mm))."\n";'   done
@@ -1468,7 +1510,7 @@ rb;2053615
 java;77586461
 C;2483135
 cat | cut -d\; -f2 | awk '{print i+=$1}' | tail -1
-110725126
+110,725,126
 
 #what fraction of delta has 10 or fewer APIs?
 for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat PtAPkgQ$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {print "'$la'",(c[0]+c[1]+c[2]+c[3]+c[4]+c[5]+c[6]+c[7]+c[8]+c[9])/n,n,$1}'; done
@@ -1542,6 +1584,7 @@ JS;15118273;58081;611156
 rb;12014953;24989;162232
 java;290099632;73443;546557
 C;602688210;65323;302328
+1,179,568,544
 
 for la in F jl R ipy pl Rust Cs Go Scala PY JS rb java C; do zcat  /da4_data/play/api/PtAPkgQ$la.a10.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgQ$la.a10.nm;   done
 F;561214;3796;5190
@@ -1559,20 +1602,139 @@ rb;24196791;97982;497732
 java;390303008;295725;1429521
 C;822861651;242355;833121
 
+
+zcat PAPkgQ.all2.a100.b50 | cut -d\; -f2 | uniq -c > PAPkgQ.all2.a100.b50.cnts
+awk '{n[$2]+=$1}END{for (i in n){print i,n[i]}}' PAPkgQ.all2.a100.b50.cnts
+Rust 1852525
+java 68945988
+Go 15083296
+PY 73122267
+Cs 30037469
+JS 24352936
+C 36866524
+ipy 3816574
+rb 10385313
+R 1137280
+F 90103
+jl 492493
+Scala 5070321
+pl 3932819
+
+
+
 dm=0
 The doc-vectors are obtained by training a neural network on the synthetic task of predicting a center word based an average of both context word-vectors and the full document’s doc-vector.
 
 
 #Evaluating against qualitative data
+zcat /da0_data/basemaps/gz/a2AQ.s | cut -d\; -f1 | perl -I /home/audris/lib64/perl5 -I /home/audris/lib/x86_64-linux-gnu/perl -I /home/audris/lookup -ane 'use cmt; chop();@x=splitSignature($_);@n = split(/ /, $x[0]); @e = split(/\@/, $x[1]); print "$_;$x[0];$x[1];$n[0];$n[$#n];$e[0];$e[1]\n";' | gzip > asQ.split
+wget https://zenodo.org/record/1484498/files/socetio.csv
+wget https://zenodo.org/record/1484498/files/react.csv
+wget https://zenodo.org/record/1484498/files/mongodb.csv
 
-m675.py > m675.0.out
-x=read.table('m675.0.out',sep=";")
-x$rv = apply(x[,-c(1,2)],1,mean)
-tapply(x$V2,x$V1,mean)
-    mongo     react  socketio 
-0.3124272 0.2585274 0.3651081
- 
-tapply(x$V2-x$rv,x$V1,mean)
-    mongo     react  socketio 
-0.2054196 0.1810224 0.2761625 
+cut -d\; -f3 {socketio,mongodb,react}.csv|grep -v email | sed 's|"||g' | lsort 1G -u > survey.email
+cat experts.csv | perl ~/lookup/mp.perl 3 /da0_data/basemaps/gz/a2AQ.s > expertsA.csv
+perl -ane 'chop();@x=split(/;/); $z=shift @x; $a=pop @x; print "$a;".(join ";", @x).";$z\n";' < expertsA.csv | lsort 1G -t\; -k1,1 > expertsA.csv.s
+
+#in da0_data/play/idRes
+zcat asQ.split|cut -d\; -f1,3 | python md5.py | lsort 20G | gzip > emd52a
+
+for i in socketio mongodb react
+do cut -d\; -f3,6,17 $i.csv | grep -v email | sed 's|"||g'|sed "s|;|;"$i";|" 
+done | lsort 1G -t\; -k1 > exa.csv
+
+zcat emd52a | join -t\; exa.csv - > exa1.csv
+cat exa1.csv | perl ~/lookup/mp.perl 4 /da0_data/basemaps/gz/a2AQ.s > exA.csv
+
+
+python3 m675.py > m675.full
+568
+python3 m675.py > out675.a10.2
+568
+
+#x=read.table('out675.full',sep=";")
+x=read.table('out675.a10.2',sep=";")
+x$rv = apply(x[,-c(1:4)],1,mean)
+tapply(x$V4-x$rv,x$V1,mtte)
+  mongodb     react  socketio 
+0.1320529 0.1640949 0.3011829 
+
+x$y=x$V4-x$rv
+summary(lm(y~V1+V2+V3,data=x))
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  8.312e-02  1.845e-02   4.504  8.1e-06 ***
+V1react      1.789e-02  1.416e-02   1.263 0.207006    
+V1socketio   1.770e-01  1.649e-02  10.732  < 2e-16 ***
+V2          -1.742e-05  1.447e-05  -1.204 0.229065    
+V3           1.725e-02  4.420e-03   3.903 0.000107 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.0968 on 563 degrees of freedom
+Multiple R-squared:  0.2452,    Adjusted R-squared:  0.2399 
+
+summary(lm(V4~V1+log(V2)+V3,data=x))
+           Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 0.151631   0.016344   9.278  < 2e-16 ***
+V1react     0.018500   0.012213   1.515 0.130377    
+V1socketio  0.173256   0.014407  12.026  < 2e-16 ***
+log(V2)     0.003201   0.001707   1.875 0.061251 .  
+V3          0.014425   0.003842   3.755 0.000191 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.08424 on 563 degrees of freedom
+Multiple R-squared:  0.3036,    Adjusted R-squared:  0.2987 
+F-statistic: 61.37 on 4 and 563 DF,  p-value: < 2.2e-16
+
+summary(lm(V3~V1+log(V2)+V4,data=x))
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  2.48619    0.15868  15.668  < 2e-16 ***
+V1react      0.67528    0.12951   5.214 2.60e-07 ***
+V1socketio  -0.81566    0.17161  -4.753 2.55e-06 ***
+log(V2)      0.07209    0.01830   3.938 9.23e-05 ***
+V4           1.69367    0.45106   3.755 0.000191 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.9128 on 563 degrees of freedom
+Multiple R-squared:  0.2433,    Adjusted R-squared:  0.2379 
+
+
+
+##########################################
+f='doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0'
+import gzip,collections,gensim.models.doc2vec,math
+from gensim.models import Doc2Vec
+f='doc2vec.200.1.5.PAPkgQ.all2.a100.b50.0'
+mod = Doc2Vec.load (f)
+
+mod.most_similar('readr')
+mod.most_similar('data.table')
+mod.most_similar('pandas')
+mod.wv.similar_by_vector(mod.docvecs['R'])
+mod.wv.similar_by_vector(mod.docvecs['JS'])
+mod.wv.similar_by_vector(-mod.docvecs['PY']+mod.docvecs['R']+mod.wv.get_vector('pandas'))
+
+mod.most_similar('readr')
+[('tidyr', 0.9841052889823914), ('tidyverse', 0.9832087159156799), ('stringi', 0.9801042675971985), ('stringr', 0.9781765937805176), ('lubridate', 0.9763726592063904), ('purrr', 0.9756897687911987), ('shinydashboard', 0.9756823182106018), ('magrittr', 0.9755414724349976), ('shiny', 0.975053608417511), ('randomForest', 0.9747953414916992)]
+
+
+>>> mod.most_similar('data.table')
+[('reshape2', 0.9711512327194214), ('doMC', 0.9693106412887573), ('stringi', 0.9675365686416626), ('randomForest', 0.9670689105987549), ('Rcpp', 0.9667882919311523), ('gridExtra', 0.9667866826057434), ('doParallel', 0.9664762020111084), ('microbenchmark', 0.9648315906524658), ('roxygen2', 0.9642760753631592), ('dplyr', 0.964144766330719)]
+
+>>>mod.most_similar('pandas')
+[('matplotlib.pyplot', 0.8937591910362244), ('seaborn', 0.8759922981262207), ('numpy', 0.8473187685012817), ('scipy.stats', 0.8471274971961975), ('statsmodels.api', 0.8400012850761414), ('matplotlib', 0.8307245969772339), ('pandas.DataFrame', 0.827376127243042), ('scipy.stats.norm', 0.8176226615905762), ('scipy', 0.8164981603622437), ('sklearn.decomposition.PCA', 0.8095367550849915)]
+
+>>> mod.wv.similar_by_vector(mod.docvecs['R'])
+[('ggplot2', 0.9416438341140747), ('dplyr', 0.9274526238441467), ('testthat', 0.922480583190918), ('reshape2', 0.917689323425293), ('stringr', 0.9147644639015198), ('magrittr', 0.9097719192504883), ('knitr', 0.9066928625106812), ('data.table', 0.905428409576416), ('tidyr', 0.9049832820892334), ('readr', 0.9037255048751831)]
+
+
+
+>>> mod.wv.similar_by_vector(mod.docvecs['JS'])
+[('lodash', 0.8152533769607544), ('moment', 0.8062593936920166), ('underscore', 0.789423942565918), ('rimraf', 0.7869737148284912), ('socket.io', 0.7839827537536621), ('npm', 0.7823067903518677), ('webpack', 0.7808771133422852), ('marked', 0.7798334360122681), ('jquery', 0.776277482509613), ('express', 0.7752944231033325)]
+>>> mod.wv.similar_by_vector(-mod.docvecs['PY']+mod.docvecs['R']+mod.wv.get_vector('pandas'))
+[('ggplot2', 0.6462166905403137), ('jsonlite', 0.6377792358398438), ('dplyr', 0.6358301043510437), ('knitr', 0.6333364844322205), ('stringr', 0.6324319839477539), ('RColorBrewer', 0.6322579383850098), ('testthat', 0.6297568678855896), ('readr', 0.6281371116638184), ('RCurl', 0.6270754337310791), ('tidyr', 0.6259021162986755)]
+
+
 
