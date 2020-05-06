@@ -1,5 +1,51 @@
 #!/bin/bash
 
+zcat PtAPkgQR.s0 | cut -d\; -f4- | perl -e 'while(<STDIN>){chop();@m=sort split(/;/);for $i (0..$#m){$a{$m[$i]}++;for $j (($i+1)..$#m){$n{$m[$i]}{$m[$j]}++;$n{$m[$j]}{$m[$i]}++}}};for $i (keys %a){for $j (keys %a){ print "$i;$j;$a{$i};$a{$j};$n{$i}{$j}\n" if ($i cmp $j)<0 && $a{$j}>5000 && $a{$i} > 5000 }}' | gzip > crosstab.gz
+
+
+x=read.table("crosstab.gz", sep=";",quote="",comment.char="")
+names(x)=c("a","b","na","nb","nab")
+x$mn = apply(x[,c("na","nb")],1,min)
+x$mor = x$mn/(x$nab+1);
+x$tot=x$na+x$nb-x$nab;
+x$ind=(x$na/x$tot * x$nb/x$tot);
+x$pab = x$nab/x$tot;
+x$or = x$ind/(1-x$ind)*(1-x$pab)/x$pab
+
+#x=x[x$na>1000&x$nb>1000&x$or>3,]
+
+
+myftestl = function(y){
+  y=as.integer(y)
+  res = fisher.test(matrix(c(y[1]-y[3],  y[3], y[3], y[2]-y[3]),ncol=2))
+  res$conf.int[1];
+}
+myftestu = function(y){
+  y=as.integer(y)
+  res = fisher.test(matrix(c(y[1]-y[3],  y[3], y[3], y[2]-y[3]),ncol=2))
+  res$conf.int[2];
+}
+x$orl = apply(x[,3:5],1,myftestl)
+x$oru = apply(x[,3:5],1,myftestu)
+
+quantile(x$oru)
+
+y = x[x$a=='tidyr'&x$b=='readr',3:5]
+fisher.test(matrix(as.integer(c(y[1]-y[3],  y[3], y[3], y[2]-y[3])),ncol=2))
+
+ Fisher's Exact Test for Count Data
+
+data:  matrix(as.integer(c(y[1] - y[3], y[3], y[3], y[2] - y[3])), ncol = 2)
+p-value < 2.2e-16
+alternative hypothesis: true odds ratio is not equal to 1
+95 percent confidence interval:
+ 13.59858 13.99002
+sample estimates:
+odds ratio 
+   13.7906 
+
+
+
 #prepare data mapping projects/time/author/apis for the following languages
 for LA in jl pl R F Go Scala Rust Cs PY ipy JS C java rb
 do zcat PtaPkgQ$LA.*.gz | lsort 500G -t\| | uniq | gzip >  PtaPkgQ$LA.s
