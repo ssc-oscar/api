@@ -3,18 +3,21 @@
 #new ver R
 ####################
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
-do zcat PtAPkgR$la.s | perl -e 'while(<STDIN>){chop();($p,$t,$a)=split(/;/);$pre=0; $pre=1 if $t>= 1518784533+3600*24*365.25; $pn{$p}{$pre}++; $an{$a}{$pre}++;}; for my $p (keys %pn){print "p;$p;$pn{$p}{1};$pn{$p}{0}\n";} for my $a (keys %an){print "a;$a;$an{$a}{1};$an{$a}{0}\n";}' | gzip > PtaPkgR$la.cnt
+do zcat PtAPkgR$la.s | perl -e 'while(<STDIN>){chop();($p,$t,$a)=split(/;/);$pre=0; $pre=1 if $t>= 1518784533+3600*24*365.25; $pn{$p}{$pre}++; $an{$a}{$pre}++;}; for my $p (keys %pn){print "p;$p;$pn{$p}{1};$pn{$p}{0}\n";} for my $a (keys %an){print "a;$a;$an{$a}{1};$an{$a}{0}\n";}' | gzip > PtAPkgR$la.cnt
+done
 
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
-do zcat PtaPkgR$la.cnt| grep ^p | awk -F\; '{if($4>100 && $3>100)print $0}' > PtaPkgR$la.cnt100
+do zcat PtAPkgR$la.cnt| grep ^a | awk -F\; '{if($4>100 && $3>100)print $0}' > PtAPkgR$la.cnt100
+done
 
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
 do cut -d\; -f2 PtAPkgR$la.cnt100
-done | lsort 1G -u | gzip > auR100.gz
+done | lsort 1G -u | gzip > AuR100.gz
+
 
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
-do zcat PtAPkgR$la.s | perl ~/bin/grepField.perl auR100.gz 3
-done | gzip > allR.a100.gz
+do zcat PtAPkgR$la.s 
+done | perl ~/bin/grepField.perl AuR100.gz 3 | gzip > PtAPkgRAllA100.s
 
 
 #fit in da5:/data/play/forks
@@ -109,12 +112,135 @@ mean of x
 
 #do PRs
 
+# Try new PR data
+perl joinPrs.perl > joinedPrs.csv
+cut -d\; -f2 joinedPrs.csv | sort -u -t\; | gzip > au.prs.new
+zcat au.prs.new | perl ~/lookup/mp.perl 0 /da0_data/basemaps/gz/a2AQ.s | lsort 1G -t\; -u | gzip > Au.prs.new
+
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
-do zcat PtaPkgR$la.prs.s
+do zcat PtAPkgR$la.s | perl ~/lookup/grepField.perl Au.prs.new 3 | gzip > PtAPkgR$la.prs.s
 done
 
-cat PRdata_newA.csv | perl ~/lookup/mp.perl 1 /da0_data/basemaps/gz/p2PR.s > PRdata_newAR.csv
+cat joinedPrs.csv | sed 's|https://github.com/||;s|/pull/|;|;s|/|_|;' | perl ~/lookup/mp.perl 0 /da0_data/basemaps/gz/p2PR.s | perl ~/lookup/mp.perl 2 /da0_data/basemaps/gz/a2AQ.s  >  joinedPrsAP.csv
 
+
+cut=1518784533
+for la in F jl R ipy pl Rust Dart Kotlin TypeScript Go Scala rb Cs C java PY JS 
+do zcat PtAPkgR$la.prs.s | awk '{print "'$la';"$0}'
+done | perl -e 'while(<STDIN>){chop(); ($la,$p,$t,$a,@ms)=split(/;/);if ($t < '$cut'){ for $m (@ms){$k{"$p;$a;$la"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.Rnew.s2.$cut
+for la in F jl R ipy pl Rust Dart Kotlin TypeScript Go Scala rb Cs C java PY JS 
+do zcat PtAPkgR$la.prs.s
+done | perl -e 'while(<STDIN>){chop(); ($p,$t,$a,@ms)=split(/;/);if ($t >= '$cut'){ for $m (@ms){$k{"$p;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.Rnew.s4.$cut
+perl cmpAprsvRnew.perl prs.Rnew $cut | gzip > prs.Rnew.sAD.$cut
+
+python3 measureAPprsvRnew.py /da4_data/play/api/doc2vecR.200.30.20.5.$cut.JS.trained prs.Rnew.sAD.$cut | perl -ane 's/\r//g;print' > out.prs.JSRnew.$cut
+
+python3 fitXldRprs.py PtAPkgR 200 30 20 5 1518784533 PRs F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 2> fitPRs.err
+python3 measureAPprsvRnew.py doc2vecR.200.30.20.5.1518784533.PRs.trained prs.Rnew.sAD.$cut 2> missPRs | perl -ane 's/\r//g;print' > out.prs.PRsRnew.$cut
+
+x=read.table("out.prs.PRsRnew.1518784533",sep=";",quote="",comment.char="");
+if (length(grep('\\bbot\\b', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('\\(bot\\)', x$V1,perl=T,ignore.case=T),]
+if (length(grep('Automation', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('Automation', x$V1,perl=T,ignore.case=T),]
+sim=x[,dim(x)[2]];
+y = x[,3]=='True';
+prev = x[,4]>0;
+z=x[,-c(1:4,20,23)]
+summary(glm(y~sim,family=binomial))$coefficients
+             Estimate Std. Error  z value      Pr(>|z|)
+(Intercept) 0.2851478 0.01129879 25.23701 1.572824e-140
+sim         0.5007773 0.02464404 20.32043  8.483674e-92
+
+#JS specific, where most of PRs are
+x=read.table("out.prs.JSRnew.1518784533",sep=";",quote="",comment.char="");
+if (length(grep('\\bbot\\b', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('\\(bot\\)', x$V1,perl=T,ignore.case=T),]
+if (length(grep('Automation', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('Automation', x$V1,perl=T,ignore.case=T),]
+#nn = table(as.character(x[,1]));ind = match(x[,1], names(nn[nn<3]),nomatch=0); x=x[ind > 0,];
+#ind = match(x[,1], amed,nomatch=0);x=x[ind > 0,];
+#x=x[x$V8+x$V7>0,]
+#response
+#y=cbind(x$V8,x$V7)
+sim=x[,dim(x)[2]];
+y = x[,3]=='True';
+prev = x[,4]>0;
+z=x[,-c(1:4,20:23)]
+
+summary(glm(y~sim,family=binomial))$coefficients
+             Estimate Std. Error  z value      Pr(>|z|)
+(Intercept) 0.2584875 0.01106767 23.35519 1.220673e-120
+sim         0.7322888 0.02614693 28.00669 1.346974e-172
+
+
+form=as.formula(paste(c("y~sim",names(z)),collapse="+"));
+mod = glm(form,family=binomial,data=z,subs=!prev)
+summary(mod);
+Coefficients:
+              Estimate Std. Error  z value Pr(>|z|)    
+(Intercept) -1.582e+00  5.351e-02  -29.565  < 2e-16 ***
+sim          5.044e-01  9.093e-02    5.547 2.90e-08 ***
+V5          -1.084e-04  1.946e-05   -5.572 2.51e-08 ***
+V6           1.132e+00  3.422e-02   33.076  < 2e-16 ***
+V7          -7.296e-06  9.040e-07   -8.071 6.98e-16 ***
+V8           3.209e+00  5.957e-02   53.864  < 2e-16 ***
+V9          -2.346e-01  2.291e-02  -10.240  < 2e-16 ***
+V10         -1.436e-06  1.286e-08 -111.726  < 2e-16 ***
+V11          6.754e-03  1.363e-03    4.956 7.18e-07 ***
+V12          1.505e-02  1.014e-03   14.841  < 2e-16 ***
+V13         -2.105e-02  7.262e-04  -28.993  < 2e-16 ***
+V14          6.316e-06  1.569e-06    4.026 5.67e-05 ***
+V15         -7.116e-06  1.921e-06   -3.704 0.000212 ***
+V16         -1.608e-03  1.918e-04   -8.384  < 2e-16 ***
+V17          2.648e-01  2.344e-02   11.299  < 2e-16 ***
+V18         -4.830e-01  3.881e-01   -1.244 0.213322    
+V19          9.170e-01  2.867e-02   31.980  < 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 86374  on 62419  degrees of freedom
+Residual deviance: 50436  on 62403  degrees of freedom
+AIC: 50470
+
+library(car)
+> vif(mod)
+     sim       V5       V6       V7       V8       V9      V10      V11 
+1.065648 1.031543 1.414611 1.242080 1.101948 1.033086 1.288278 1.246721 
+     V12      V13      V14      V15      V16      V17      V18      V19 
+1.276105 1.395016 1.938039 1.824200 1.265469 1.083477 1.001566 1.527913 
+		
+
+mod = glm(y~sim+V5+V6+ V7 + V8 + V9 + V10 + V11 + V12 + V17+V18+V19+V21+V22,family=binomial,data=z,subs=!prev)
+summary(mod)
+              Estimate Std. Error  z value Pr(>|z|)    
+(Intercept) -1.648e+00  5.429e-02  -30.363  < 2e-16 ***
+sim          6.020e-01  9.332e-02    6.450 1.12e-10 ***
+V5          -1.154e-03  1.084e-04  -10.641  < 2e-16 ***
+V6           1.204e+00  3.529e-02   34.117  < 2e-16 ***
+V7          -4.674e-06  9.073e-07   -5.152 2.58e-07 ***
+V8           3.055e+00  5.997e-02   50.944  < 2e-16 ***
+V9          -2.546e-01  2.317e-02  -10.988  < 2e-16 ***
+V10         -1.426e-06  1.302e-08 -109.481  < 2e-16 ***
+V11          2.421e-03  1.351e-03    1.792   0.0732 .  
+V12          4.903e-03  9.239e-04    5.306 1.12e-07 ***
+V17          2.615e-01  2.365e-02   11.057  < 2e-16 ***
+V18         -4.678e-01  3.971e-01   -1.178   0.2388    
+V19          7.501e-01  2.872e-02   26.119  < 2e-16 ***
+V21         -1.510e-06  1.229e-06   -1.228   0.2194    
+V22          1.375e-05  2.133e-06    6.445 1.15e-10 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 81054  on 58590  degrees of freedom
+Residual deviance: 49093  on 58576  degrees of freedom
+
+
+### old PR data
+for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
+do zcat PtaPkgR$la.prs.s
+done | perl -e 'while(<STDIN>){chop(); ($p,$t,$a,@ms)=split(/;/);if ($t >= '$cut'){ for $m (@ms){$k{"$p;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.R.s4.$cut
+cat PRdata_newA.csv | perl ~/lookup/mp.perl 1 /da0_data/basemaps/gz/p2PR.s > PRdata_newAR.csv
 
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C PY JS 
 do zcat PtAPkgR$la.s | perl ~/bin/grepField.perl au.prs 3 | gzip > PtaPkgR$la.prs.s
@@ -128,6 +254,17 @@ for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS
 do zcat PtaPkgR$la.prs.s
 done | perl -e 'while(<STDIN>){chop(); ($p,$t,$a,@ms)=split(/;/);if ($t >= '$cut'){ for $m (@ms){$k{"$p;$a"}{$m}++}}};while (($p, $v)=each %k){@ms=sort keys %{$v}; print "$p;".(join ";", @ms)."\n";}' | gzip > prs.R.s4.$cut
 perl cmpAprsvR.perl prs.R $cut | gzip > prs.R.sAD.$cut
+
+x=read.table("out.prs.R100.1518784533",sep=";",quote="",comment.char="");
+if (length(grep('\\bbot\\b', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('\\(bot\\)', x$V1,perl=T,ignore.case=T),]
+if (length(grep('Automation', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('Automation', x$V1,perl=T,ignore.case=T),]
+#nn = table(as.character(x[,1]));ind = match(x[,1], names(nn[nn<3]),nomatch=0); x=x[ind > 0,];
+#ind = match(x[,1], amed,nomatch=0);x=x[ind > 0,];
+x=x[x$V8+x$V7>0,]
+#response
+y=cbind(x$V8,x$V7)
+sim=x$V9
+summary(glm(y~sim,family=binomial))$coefficients
 
 
 for la in JS
@@ -146,11 +283,12 @@ python3 measureAPprsvR.py /da4_data/play/api/doc2vecR.200.30.20.5.1550908281.eAp
 python3 measureAPprsvR.py /da4_data/play/api/doc2vecR.200.30.20.5.1550908281.eA.trained prs.JSR.sAD.$cut |perl -ane 's/\r//g;print' > out.prs.JSR1.$cut
 
 python3 measureAPprsvR.py /da4_data/play/api/doc2vecR.200.30.20.5.$cut.eA.trained prs.R.sAD.$cut |perl -ane 's/\r//g;print' > out.prs.R1.$cut
+python3 measureAPprsvR.py /da4_data/play/api/doc2vecR.200.30.20.5.$cut.eAp100.trained prs.R.sAD.$cut |perl -ane 's/\r//g;print' > out.prs.R100.$cut
 
 
 aa = read.table("eAp.c2a.gz",sep=";",quote="",comment.char="");
 amed = as.character(aa[aa[,1]>100&aa[,1]<25000,2]);
-x=read.table("out.prs.JSR.1518784533",sep=";",quote="",comment.char="");
+x=read.table("out.prs.R100.1518784533",sep=";",quote="",comment.char="");
 if (length(grep('\\bbot\\b', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('\\(bot\\)', x$V1,perl=T,ignore.case=T),]
 if (length(grep('Automation', x$V1,perl=T,ignore.case=T) > 0)) x=x[-grep('Automation', x$V1,perl=T,ignore.case=T),]
 #nn = table(as.character(x[,1]));ind = match(x[,1], names(nn[nn<3]),nomatch=0); x=x[ind > 0,];
