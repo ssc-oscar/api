@@ -359,11 +359,12 @@ Multiple R-squared:  0.1609,    Adjusted R-squared:  0.1588
 F-statistic:  77.8 on 4 and 1623 DF,  p-value: < 2.2e-16
 
 
-
-
-######################
-# report stats for the FSE submission Table 1-2
+##################################################################################################################
+# report stats for the ICSE submission Table 1-2
+##################################################################################################################
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS ; do zcat  PtAPkgR$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgR$la.nm;   done
+######################
+#lang;chages;authors;projects
 F;1628760;24898;15623
 jl;1297134;18666;35723
 R;6822662;361754;516678
@@ -382,8 +383,8 @@ PY;612708423;4795735;6820899
 C;1780602124;3656965;4704446
 java;1106084606;5063200;7512800
 
+#lang;apis
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS ;do zcat PtAPkgR$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);for $m (@ms){$mm{$m}++;}} print "'$la';".(scalar(keys %mm))."\n";';  done
-
 F;59349
 jl;104725
 R;85255
@@ -402,6 +403,7 @@ PY;17227676
 rb;669297
 C;2553521
 
+#quantiles on the number of APIs per blob
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS; do zcat PtAPkgR$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {print "'$la'",(c[0]+c[1]+c[2]+c[3]+c[4]+c[5]+c[6]+c[7]+c[8]+c[9])/n,n,$1}'; done
 F 0.855973 1628760 106
 jl 0.917709 1297134 108
@@ -421,7 +423,8 @@ C 0.754578 1780602124 1007
 rb 0.977803 74618824 1002
 PY 0.836531 612708423 1001
 JS 0.460207 55609812 10014
-
+##################################################################################################################
+##################################################################################################################
 
 
 #prepare data mapping projects/time/author/apis for the following languages
