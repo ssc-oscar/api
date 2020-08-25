@@ -2,6 +2,75 @@
 ####################
 #new ver R
 ####################
+##################################################################################################################
+# report stats for the ICSE submission Table 1-2
+##################################################################################################################
+for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS ; do zcat  PtAPkgR$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgR$la.nm;   done
+######################
+#lang;chages;authors;projects
+F;1628760;24898;15623
+jl;1297134;18666;35723
+R;6822662;361754;516678
+ipy;12160775;793261;1154120
+pl;18780774;480615;547115
+Rust;13599452;95712;148327
+Dart;7036000;116317;164360
+Kotlin;28129485;281469;429071
+TypeScript;239416852;1605563;2253291
+Cs;220871444;2092316;3092761
+Go;123432323;490967;662355
+Scala;36361141;176414;210175
+rb;74618824;1222886;2343825
+JS;55609812;3362191;7347050
+PY;612708423;4795735;6820899
+C;1780602124;3656965;4704446
+java;1106084606;5063200;7512800
+
+#lang;apis
+for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS ;do zcat PtAPkgR$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);for $m (@ms){$mm{$m}++;}} print "'$la';".(scalar(keys %mm))."\n";';  done
+F;59349
+jl;104725
+R;85255
+ipy;687085
+pl;58942
+Rust;818686
+Dart;467863
+Kotlin;6233673
+TypeScript;7324019
+Cs;6648357
+Go;245102
+Scala;3571593
+java;85079403
+JS;1105918
+PY;17227676
+rb;669297
+C;2553521
+
+#quantiles on the number of APIs per blob
+for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS; do zcat PtAPkgR$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {print "'$la'",(c[0]+c[1]+c[2]+c[3]+c[4]+c[5]+c[6]+c[7]+c[8]+c[9])/n,n,$1}'; done
+F 0.855973 1628760 106
+jl 0.917709 1297134 108
+R 0.950275 6822662 117
+ipy 0.749627 12160775 1158
+pl 0.956707 18780774 109
+Rust 0.87389 13599452 118
+Dart 0.887776 7036000 165
+Kotlin 0.65343 28129485 1096
+TypeScript 0.865473 239416852 1013
+Cs 0.846328 220871444 150
+Go 0.834309 123432323 1207
+Scala 0.76427 36361141 1288
+rb 0.977803 74618824 1002
+java 0.573023 1106084606 1004
+C 0.754578 1780602124 1007
+rb 0.977803 74618824 1002
+PY 0.836531 612708423 1001
+JS 0.460207 55609812 10014
+##################################################################################################################
+##################################################################################################################
+
+
+
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
 do zcat PtAPkgR$la.s | perl -e 'while(<STDIN>){chop();($p,$t,$a)=split(/;/);$pre=0; $pre=1 if $t>= 1518784533+3600*24*365.25; $pn{$p}{$pre}++; $an{$a}{$pre}++;}; for my $p (keys %pn){print "p;$p;$pn{$p}{1};$pn{$p}{0}\n";} for my $a (keys %an){print "a;$a;$an{$a}{1};$an{$a}{0}\n";}' | gzip > PtAPkgR$la.cnt
 done
@@ -35,6 +104,10 @@ zcat /da4_data/play/api/eAp.api| ~/bin/grepField.perl eAp.a100 4 | gzip > /da4_d
 
 python3 fitXldRea.py eAp.api100 200 30 20 5 1518784533 eAp100 eAp100
 
+
+##################################################################################################################
+# report stats for the ICSE submission Table 3
+##################################################################################################################
 #need eAp.api
 perl prepPredApi.perl | gzip > eAp.sAD
 python3 measureAPIvR.py| gzip > measureAPIvR.gz
@@ -110,8 +183,8 @@ sample estimates:
 mean of x 
 0.1405376
 
+##################################################################################################################
 #do PRs
-
 # Try new PR data
 perl joinPrs.perl > joinedPrs.csv
 cut -d\; -f2 joinedPrs.csv | sort -u -t\; | gzip > au.prs.new
@@ -306,8 +379,9 @@ sim          0.09917047 0.03403742   2.913572  3.573196e-03
 #nn = table(as.character(x[,1]));ind = match(x[,1], names(nn[nn<3]),nomatch=0); x=x[ind > 0,];
 
 
-
-#do self-assessment Table 5-6
+#############################################
+#do self-assessment Table 5-6 ICSE
+#############################################
 python3 m675vR.py > out675.vR
 1616
 
@@ -323,7 +397,7 @@ tapply(z$V4-z$rv,z$V1,mtte)
 
 
 ##################################################
-# Table 5
+# Table 5 ICSE
 ##################################################
 summary(lm(V4~V1+log(V2)+V3,data=z))
              Estimate Std. Error t value Pr(>|t|)    
@@ -342,7 +416,7 @@ F-statistic: 56.95 on 4 and 1623 DF,  p-value: < 2.2e-16
 
 
 ##################################################
-# Table 6
+# Table 6 ICSE
 ##################################################
 summary(lm(V3~V1+log(V2)+V4,data=z))
             Estimate Std. Error t value Pr(>|t|)    
@@ -358,73 +432,8 @@ Residual standard error: 1.004 on 1623 degrees of freedom
 Multiple R-squared:  0.1609,    Adjusted R-squared:  0.1588 
 F-statistic:  77.8 on 4 and 1623 DF,  p-value: < 2.2e-16
 
-
-##################################################################################################################
-# report stats for the ICSE submission Table 1-2
-##################################################################################################################
-for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS ; do zcat  PtAPkgR$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);$as{$a}++;$ps{$p}++;$ls{$#ms}++, $n++;} print STDERR "'$la';$n;".(scalar(keys %as)).";".(scalar(keys %ps))."\n"; for $nl (keys %ls){print "$nl;$ls{$nl}\n"}' | gzip > PtAPkgR$la.nm;   done
-######################
-#lang;chages;authors;projects
-F;1628760;24898;15623
-jl;1297134;18666;35723
-R;6822662;361754;516678
-ipy;12160775;793261;1154120
-pl;18780774;480615;547115
-Rust;13599452;95712;148327
-Dart;7036000;116317;164360
-Kotlin;28129485;281469;429071
-TypeScript;239416852;1605563;2253291
-Cs;220871444;2092316;3092761
-Go;123432323;490967;662355
-Scala;36361141;176414;210175
-rb;74618824;1222886;2343825
-JS;55609812;3362191;7347050
-PY;612708423;4795735;6820899
-C;1780602124;3656965;4704446
-java;1106084606;5063200;7512800
-
-#lang;apis
-for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS ;do zcat PtAPkgR$la.s| perl -e 'while(<STDIN>){chop();($p,$t,$a,@ms)=split(/;/);for $m (@ms){$mm{$m}++;}} print "'$la';".(scalar(keys %mm))."\n";';  done
-F;59349
-jl;104725
-R;85255
-ipy;687085
-pl;58942
-Rust;818686
-Dart;467863
-Kotlin;6233673
-TypeScript;7324019
-Cs;6648357
-Go;245102
-Scala;3571593
-java;85079403
-JS;1105918
-PY;17227676
-rb;669297
-C;2553521
-
-#quantiles on the number of APIs per blob
-for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb java C rb PY JS; do zcat PtAPkgR$la.nm|lsort 1G -t\; -k2 -rn | awk -F\; '{n+=$2; c[$1]=$2} END {print "'$la'",(c[0]+c[1]+c[2]+c[3]+c[4]+c[5]+c[6]+c[7]+c[8]+c[9])/n,n,$1}'; done
-F 0.855973 1628760 106
-jl 0.917709 1297134 108
-R 0.950275 6822662 117
-ipy 0.749627 12160775 1158
-pl 0.956707 18780774 109
-Rust 0.87389 13599452 118
-Dart 0.887776 7036000 165
-Kotlin 0.65343 28129485 1096
-TypeScript 0.865473 239416852 1013
-Cs 0.846328 220871444 150
-Go 0.834309 123432323 1207
-Scala 0.76427 36361141 1288
-rb 0.977803 74618824 1002
-java 0.573023 1106084606 1004
-C 0.754578 1780602124 1007
-rb 0.977803 74618824 1002
-PY 0.836531 612708423 1001
-JS 0.460207 55609812 10014
-##################################################################################################################
-##################################################################################################################
+######################################################################################
+######################################################################################
 
 
 #prepare data mapping projects/time/author/apis for the following languages
