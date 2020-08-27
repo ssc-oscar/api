@@ -311,6 +311,56 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 Residual deviance: 49093  on 58576  degrees of freedom
 
 
+# PR w/ mapping, following same method as PR Paper
+ x$V17= factor(x$V17)
+ x$V18= factor(x$V18)
+ x$V19= factor(x$V19)
+ x$V9= factor(x$V9)
+ z=x[,-c(1:4,20,23)]
+ v = !sapply(z, is.factor)
+ v[c(2,4)] = FALSE
+ z[,v] = data.frame(sapply(z[,v], function(x) log(as.numeric(x) +1) ))
+ mod = glm(y~sim+V5+V6+ V7 + V8 + V9 + V10 + V11 + V12 + V17+V18+V19+V21+V22,family=binomial,data=z,subs=!prev)
+ summary(mod)
+ 
+ Call:
+glm(formula = y ~ sim + V5 + V6 + V7 + V8 + V9 + V10 + V11 +
+    V12 + V17 + V18 + V19 + V21 + V22, family = binomial, data = z,
+    subset = !prev)
+
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-2.9279  -0.8827   0.4236   0.8703   2.5697
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept) -0.466443   0.087763  -5.315 1.07e-07 ***
+sim          0.352477   0.081615   4.319 1.57e-05 ***
+V5          -0.167008   0.008890 -18.786  < 2e-16 ***
+V6           0.921477   0.031972  28.822  < 2e-16 ***
+V7          -0.006073   0.005190  -1.170    0.242
+V8           2.801641   0.054485  51.420  < 2e-16 ***
+V91         -0.203897   0.020089 -10.149  < 2e-16 ***
+V10         -0.197989   0.004117 -48.087  < 2e-16 ***
+V11         -0.299495   0.012730 -23.527  < 2e-16 ***
+V12          0.163773   0.010132  16.163  < 2e-16 ***
+V171         0.105167   0.019869   5.293 1.20e-07 ***
+V181        -0.498211   0.327791  -1.520    0.129
+V191         1.090393   0.025549  42.679  < 2e-16 ***
+V21          0.071721   0.008622   8.319  < 2e-16 ***
+V22          0.060153   0.006797   8.850  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 81054  on 58590  degrees of freedom
+Residual deviance: 63779  on 58576  degrees of freedom
+AIC: 63809
+
+Number of Fisher Scoring iterations: 4
+
+
 ### old PR data
 for la in F jl R ipy pl Rust Dart Kotlin TypeScript Cs Go Scala rb C java PY JS 
 do zcat PtaPkgR$la.prs.s
