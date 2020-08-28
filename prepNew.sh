@@ -112,6 +112,8 @@ python3 fitXldRea.py eAp.api100 200 30 20 5 1518784533 eAp100 eAp100
 perl prepPredApi.perl | gzip > eAp.sAD
 python3 measureAPIvR.py| gzip > measureAPIvR.gz
 f='measureAPIvR.gz'
+aa = read.table("eAp.c2a.gz",sep=";",quote="",comment.char="");
+amed = as.character(aa[aa[,1]>100&aa[,1]<25000,2]);
 x = read.table(f,sep=";",quote="",comment.char="");
 ind = match(x[,1], amed,nomatch=0);
 a = tapply(x$V5[ind>0], list(x$V1[ind>0],x$V3[ind>0],x$V2[ind>0]), mean,na.rm=T);
@@ -383,54 +385,48 @@ sim          0.09917047 0.03403742   2.913572  3.573196e-03
 #do self-assessment Table 5-6 ICSE
 #############################################
 python3 m675vR.py > out675.vR
-1616
-
 
 mttp = function (x) t.test(x)$p.value
 mtte = function (x) t.test(x)$estimate
 
-z=read.table('out675.vR',sep=";")
-z$rv = apply(z[,-c(1:4)],1,mean)
-tapply(z$V4-z$rv,z$V1,mtte)
-   mongodb      react   socketio 
-0.15667808 0.16301183 0.09387604 
-
+z=read.table('out675.vR',sep=";",quote="",comment.char="")
 
 ##################################################
 # Table 5 ICSE
 ##################################################
-summary(lm(V4~V1+log(V2)+V3,data=z))
+summary(lm(V4~-1+V1+log(V2)+V3,data=z))
              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  0.230606   0.011384  20.258  < 2e-16 ***
-V1react      0.014932   0.008593   1.738 0.082460 .  
-V1socketio  -0.059565   0.010785  -5.523 3.88e-08 ***
-log(V2)      0.005107   0.001369   3.730 0.000198 ***
-V3           0.021082   0.002640   7.984 2.65e-15 ***
+V1mongodb   0.2494751  0.0130248  19.154  < 2e-16 ***
+V1react     0.3070126  0.0111510  27.532  < 2e-16 ***
+V1socketio  0.4220339  0.0118403  35.644  < 2e-16 ***
+log(V2)    -0.0002471  0.0015631  -0.158    0.874    
+V3          0.0143766  0.0030008   4.791 1.81e-06 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.1089 on 1623 degrees of freedom
-Multiple R-squared:  0.1231,    Adjusted R-squared:  0.1209 
-F-statistic: 56.95 on 4 and 1623 DF,  p-value: < 2.2e-16
+Residual standard error: 0.1232 on 1602 degrees of freedom
+Multiple R-squared:  0.8992,    Adjusted R-squared:  0.8988 
+F-statistic:  2857 on 5 and 1602 DF,  p-value: < 2.2e-16
 
 
 
 ##################################################
 # Table 6 ICSE
 ##################################################
-summary(lm(V3~V1+log(V2)+V4,data=z))
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  2.30083    0.10269  22.407  < 2e-16 ***
-V1react      0.43830    0.07856   5.579 2.83e-08 ***
-V1socketio  -0.34674    0.10002  -3.467 0.000541 ***
-log(V2)      0.09586    0.01245   7.696 2.41e-14 ***
-V4           1.79270    0.22453   7.984 2.65e-15 ***
+summary(lm(V3~-1+V1+log(V2)+V4,data=z))
+           Estimate Std. Error t value Pr(>|t|)    
+V1mongodb   2.54606    0.10101  25.207  < 2e-16 ***
+V1react     2.94646    0.08426  34.969  < 2e-16 ***
+V1socketio  1.93059    0.12187  15.841  < 2e-16 ***
+log(V2)     0.11060    0.01262   8.762  < 2e-16 ***
+V4          0.98250    0.20508   4.791 1.81e-06 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 1.004 on 1623 degrees of freedom
-Multiple R-squared:  0.1609,    Adjusted R-squared:  0.1588 
-F-statistic:  77.8 on 4 and 1623 DF,  p-value: < 2.2e-16
+Residual standard error: 1.018 on 1602 degrees of freedom
+Multiple R-squared:  0.919,     Adjusted R-squared:  0.9187 
+F-statistic:  3633 on 5 and 1602 DF,  p-value: < 2.2e-16
+
 
 ######################################################################################
 ######################################################################################
