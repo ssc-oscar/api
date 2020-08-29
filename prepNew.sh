@@ -120,29 +120,31 @@ a = tapply(x$V5[ind>0], list(x$V1[ind>0],x$V3[ind>0],x$V2[ind>0]), mean,na.rm=T)
 
 a1 = tapply(x$V5[ind>-1], list(x$V1[ind>-1],x$V3[ind>-1],x$V2[ind>-1]), mean,na.rm=T);
 
-las=c("Dart","jl","R","ipy","pl","Rust","Kotlin","TypeScript","Cs","Go","Scala","rb","java","C","PY","JS");
+las=c("Dart","jl","R","ipy","pl","Rust","Kotlin","TypeScript","Cs","Go","Scala","rb","java","C","PY","JS", "F");
 res = c();
 for (la in las){
- res=rbind(res, c(t.test(a[,2,la]-a[,3,la])$estimate,t.test(a[,2,la]-a[,3,la])$p.value))
+ res=rbind(res, c(t.test(a[,2,la]-a[,3,la])$estimate, t.test(a[,2,la]-a[,3,la])$conf.int, t.test(a[,2,la]-a[,3,la])$p.value))
 }
 dimnames(res)[[1]]=las;	       
 res
-Dart       0.41207559  3.120130e-92
-jl         0.20955929  8.565540e-05
-R          0.14442871  1.455249e-06
-ipy        0.19954272  6.677312e-65
-pl         0.04645639  2.852958e-13
-Rust       0.20947185 2.010680e-151
-Kotlin     0.20606213 1.090052e-139
-TypeScript 0.23007271  0.000000e+00
-Cs         0.24571956 6.162232e-137
-Go         0.14883848  0.000000e+00
-Scala      0.20382756  8.451967e-89
-rb         0.16819598 3.796952e-188
-java       0.12770313  0.000000e+00
-C          0.13112611  0.000000e+00
-PY         0.11885238  0.000000e+00
-JS         0.09861961  0.000000e+00
+             mean of x
+Dart        0.41207559  0.39057745 0.43357372  3.120130e-92
+jl          0.20955929  0.14821779 0.27090080  8.565540e-05
+R           0.14442871  0.09336153 0.19549588  1.455249e-06
+ipy         0.19954272  0.18212334 0.21696210  6.677312e-65
+pl          0.04645639  0.03453394 0.05837884  2.852958e-13
+Rust        0.20947185  0.19792866 0.22101503 2.010680e-151
+Kotlin      0.20606213  0.19520961 0.21691465 1.090052e-139
+TypeScript  0.23007271  0.22357834 0.23656708  0.000000e+00
+Cs          0.24571956  0.23081728 0.26062184 6.162232e-137
+Go          0.14883848  0.14379367 0.15388329  0.000000e+00
+Scala       0.20382756  0.18922600 0.21842912  8.451967e-89
+rb          0.16819598  0.15879598 0.17759599 3.796952e-188
+java        0.12770313  0.12354097 0.13186528  0.000000e+00
+C           0.13112611  0.12867771 0.13357452  0.000000e+00
+PY          0.11885238  0.11583564 0.12186912  0.000000e+00
+JS          0.09861961  0.09514201 0.10209721  0.000000e+00
+F          -0.10972596 -0.73390120 0.51444928  2.679753e-01
 
 
 
@@ -309,6 +311,60 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
     Null deviance: 81054  on 58590  degrees of freedom
 Residual deviance: 49093  on 58576  degrees of freedom
+
+
+# PR w/ mapping, following same method as PR Paper
+ x$V17= factor(x$V17)
+ x$V18= factor(x$V18)
+ x$V19= factor(x$V19)
+ x$V9= factor(x$V9)
+ z=x[,-c(1:4,20,23)]
+ v = !sapply(z, is.factor)
+ v[c(2,4)] = FALSE
+ z[,v] = data.frame(sapply(z[,v], function(x) log(as.numeric(x) +1) ))
+ mod = glm(y~sim+V5+V6+ V7 + V8 + V9 + V10 + V11 + V12 +V13+V14+V15+V16+V17+V18+V19+V21+V22,family=binomial,data=z,subs=!prev)
+ summary(mod)
+
+Call:
+glm(formula = y ~ sim + V5 + V6 + V7 + V8 + V9 + V10 + V11 +
+    V12 + V13 + V14 + V15 + V16 + V17 + V18 + V19 + V21 + V22,
+    family = binomial, data = z, subset = !prev)
+
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-2.9443  -0.8504   0.3575   0.8359   2.3842
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept)  0.653965   0.093174   7.019 2.24e-12 ***
+sim          0.396475   0.083586   4.743 2.10e-06 ***
+V5          -0.119919   0.009175 -13.071  < 2e-16 ***
+V6           0.873581   0.032883  26.567  < 2e-16 ***
+V7          -0.025783   0.005376  -4.796 1.62e-06 ***
+V8           2.863714   0.055885  51.243  < 2e-16 ***
+V91         -0.211537   0.020625 -10.256  < 2e-16 ***
+V10         -0.221110   0.004248 -52.045  < 2e-16 ***
+V11         -0.173081   0.013234 -13.079  < 2e-16 ***
+V12          0.342336   0.011124  30.775  < 2e-16 ***
+V13         -0.360027   0.015221 -23.654  < 2e-16 ***
+V14         -0.014799   0.007549  -1.960   0.0500 *
+V15         -0.034954   0.006480  -5.394 6.88e-08 ***
+V16         -0.151145   0.016297  -9.274  < 2e-16 ***
+V171         0.122673   0.020422   6.007 1.89e-09 ***
+V181        -0.418404   0.324481  -1.289   0.1972
+V191         1.325638   0.026885  49.308  < 2e-16 ***
+V21          0.085849   0.008909   9.636  < 2e-16 ***
+V22          0.015426   0.007044   2.190   0.0285 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 81054  on 58590  degrees of freedom
+Residual deviance: 61069  on 58572  degrees of freedom
+AIC: 61107
+
+Number of Fisher Scoring iterations: 4
 
 
 ### old PR data
